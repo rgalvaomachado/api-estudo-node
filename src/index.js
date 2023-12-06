@@ -50,9 +50,13 @@ app.put('/app/:id', (request, response) => {
     let params = request.params;
     let findIndex = projects.findIndex(({ id }) => id == params.id)
     if (findIndex >= 0){
+        let body = request.body;
         let projeto = projects[findIndex];
+        projects[findIndex].nome = body.nome;
+        projects[findIndex].dono = body.dono;
+       
         return response.json({ 
-            projeto: projeto,
+            projeto: projeto.nome+' atualizado',
         });
     }else{
         return response.json({ 
