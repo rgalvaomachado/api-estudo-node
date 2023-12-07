@@ -5,12 +5,39 @@ const app = express();
 
 app.use(express.json()); // conseguir pegar json no body com o express;
 
-let projects = [];
-
 // let { teste } = request.query; // desestruturar  (aponta nome especifico)
 // let query = request.query;   // pega parametros query (site?teste=php)
 // let params = request.params;   //pegar parametros params (site/id)
 // let body = request.body;
+
+let projects = [];
+
+function logRequests(request, response, next){
+    let { method, url}  = request;
+    let logLabel = `[${method.toUpperCase()}] ${url}`;
+
+    console.time(logLabel);
+
+    next();
+
+    console.timeEnd(logLabel);
+}
+
+function validateProjectId (request, response, next){
+    let params = request.params;
+    let id = params.id;
+
+    if(!uuidv4.isUuid(id)){
+        return response.status(400).json({
+            error: 'Invalid ID.',
+        });
+    }
+
+    return next();
+}
+
+app.use(logRequests);
+app.use('/app/:id', validateProjectId);
 
 //rota app get
 app.get('/app', (request, response) => {
@@ -46,7 +73,7 @@ app.post('/app', (request, response) => {
 })
 
 //rota app put
-app.put('/app/:id', (request, response) => {
+app.put('/app/:id', validateProjectId, (request, response) => {
     let params = request.params;
     let findIndex = projects.findIndex(({ id }) => id == params.id)
     if (findIndex >= 0){
